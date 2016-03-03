@@ -1,17 +1,16 @@
 /**
- * React Blessed
- * ==============
+ * React Custom Renderer
+ * =====================
  *
  * Exposing the renderer's API.
  */
 import ReactInstanceHandles from 'react/lib/ReactInstanceHandles';
 import ReactElement from 'react/lib/ReactElement';
 import ReactUpdates from 'react/lib/ReactUpdates';
-import ReactBlessedIDOperations from './ReactBlessedIDOperations';
+import ReactNativeIDOperations from './ReactNativeIDOperations';
 import invariant from 'invariant';
 import instantiateReactComponent from 'react/lib/instantiateReactComponent';
-import inject from './ReactBlessedInjection';
-import {Screen} from 'blessed';
+import inject from './ReactNativeInjection';
 
 /**
  * Injecting dependencies.
@@ -21,11 +20,11 @@ inject();
 /**
  * Renders the given react element with blessed.
  *
- * @param  {ReactElement}   element   - Node to update.
- * @param  {BlessedScreen}  screen    - The screen used to render the app.
- * @return {ReactComponent}           - The rendered component instance.
+ * @param  {ReactElement}    element   - Node to update.
+ * @param  {NativeComponent} root      - The root native component to render with.
+ * @return {ReactComponent}            - The rendered component instance.
  */
-function render(element, screen) {
+function render(element, root) {
 
   // Is the given element valid?
   invariant(
@@ -33,20 +32,17 @@ function render(element, screen) {
     'render(): You must pass a valid ReactElement.'
   );
 
-  // Is the given screen valid?
-  invariant(
-    screen instanceof Screen,
-    'render(): You must pass a valid BlessedScreen.'
-  );
+  // Is the given root valid?
+  // TODO: validate the root somehow
 
-  // Creating a root id & creating the screen
+  // Creating a root id & creating the root
   const id = ReactInstanceHandles.createReactRootID();
 
   // Mounting the app
   const component = instantiateReactComponent(element);
 
-  // Injecting the screen
-  ReactBlessedIDOperations.setScreen(screen);
+  // Injecting the root
+  ReactNativeIDOperations.setRootComponent(root);
 
   // The initial render is synchronous but any updates that happen during
   // rendering, in componentWillMount or componentDidMount, will be batched
@@ -60,7 +56,7 @@ function render(element, screen) {
     ReactUpdates.ReactReconcileTransaction.release(transaction);
   });
 
-  // Returning the screen so the user can attach listeners etc.
+  // Returning the api so the user can attach listeners etc.
   return component._instance;
 }
 

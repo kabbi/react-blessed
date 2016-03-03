@@ -1,5 +1,5 @@
 /**
- * React Blessed Specific React Transaction
+ * React Native Specific React Transaction
  * =========================================
  *
  * React custom reconcile transaction injected by the renderer to enable
@@ -10,9 +10,9 @@
 import CallbackQueue from 'react/lib/CallbackQueue';
 import PooledClass from 'react/lib/PooledClass';
 import Transaction from 'react/lib/Transaction';
-import {extend} from 'lodash';
+import extend from 'lodash/object/extend';
 
-const ON_BLESSED_READY_QUEUEING = {
+const ON_NATIVE_READY_QUEUEING = {
   initialize: function () {
     this.reactMountReady.reset();
   },
@@ -21,14 +21,14 @@ const ON_BLESSED_READY_QUEUEING = {
   }
 };
 
-function ReactBlessedReconcileTransaction() {
+function ReactNativeReconcileTransaction() {
   this.reinitializeTransaction();
   this.reactMountReady = CallbackQueue.getPooled(null);
 }
 
 const Mixin = {
   getTransactionWrappers: function() {
-    return [ON_BLESSED_READY_QUEUEING];
+    return [ON_NATIVE_READY_QUEUEING];
   },
   getReactMountReady: function() {
     return this.reactMountReady;
@@ -40,11 +40,11 @@ const Mixin = {
 };
 
 extend(
-  ReactBlessedReconcileTransaction.prototype,
+  ReactNativeReconcileTransaction.prototype,
   Transaction.Mixin,
   Mixin
 );
 
-PooledClass.addPoolingTo(ReactBlessedReconcileTransaction);
+PooledClass.addPoolingTo(ReactNativeReconcileTransaction);
 
-export default ReactBlessedReconcileTransaction;
+export default ReactNativeReconcileTransaction;

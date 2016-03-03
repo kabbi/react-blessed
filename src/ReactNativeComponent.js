@@ -1,16 +1,16 @@
 /**
- * React Blessed Component
+ * React Native Component
  * ========================
  *
  * React component abstraction for the blessed library.
  */
-import blessed from 'blessed';
 import ReactMultiChild from 'react/lib/ReactMultiChild';
-import ReactBlessedIDOperations from './ReactBlessedIDOperations';
+import ReactNativeIDOperations from './ReactNativeIDOperations';
 import invariant from 'invariant';
-import update from './update';
-import solveClass from './solveClass';
-import {extend, groupBy, startCase} from 'lodash';
+
+import extend from 'lodash/object/extend';
+import groupBy from 'lodash/collection/groupBy';
+import startCase from 'lodash/string/startCase';
 
 /**
  * Variable types that must be solved as content rather than real children.
@@ -20,10 +20,10 @@ const CONTENT_TYPES = {string: true, number: true};
 /**
  * Renders the given react element with blessed.
  *
- * @constructor ReactBlessedComponent
+ * @constructor ReactNativeComponent
  * @extends ReactMultiChild
  */
-export default class ReactBlessedComponent {
+export default class ReactNativeComponent {
   constructor(tag) {
     this._tag = tag.toLowerCase();
     this._updating = false;
@@ -42,12 +42,12 @@ export default class ReactBlessedComponent {
     this._currentElement = element;
     this._eventListener = (type, ...args) => {
       if (this._updating) return;
-      
+
       const handler = this._currentElement.props['on' + startCase(type).replace(/ /g, '')];
 
       if (typeof handler === 'function') {
         if (type === 'focus' || type === 'blur') {
-          args[0] = ReactBlessedIDOperations.get(this._rootNodeID)
+          args[0] = ReactNativeIDOperations.get(this._rootNodeID)
         }
         handler(...args);
       }
@@ -59,7 +59,7 @@ export default class ReactBlessedComponent {
    *
    * @internal
    * @param  {string} rootID - The root blessed ID for this node.
-   * @param  {ReactBlessedReconcileTransaction} transaction
+   * @param  {ReactNativeReconcileTransaction} transaction
    * @param  {object} context
    */
   mountComponent(rootID, transaction, context) {
@@ -67,11 +67,11 @@ export default class ReactBlessedComponent {
 
     // Mounting blessed node
     const node = this.mountNode(
-      ReactBlessedIDOperations.getParent(rootID),
+      ReactNativeIDOperations.getParent(rootID),
       this._currentElement
     );
 
-    ReactBlessedIDOperations.add(rootID, node);
+    ReactNativeIDOperations.add(rootID, node);
 
     // Mounting children
     let childrenToUse = this._currentElement.props.children;
@@ -85,8 +85,9 @@ export default class ReactBlessedComponent {
       });
 
       // Setting textual content
-      if (content)
+      if (content) {
         node.setContent('' + content.join(''));
+      }
 
       // Mounting real children
       this.mountChildren(
@@ -97,30 +98,25 @@ export default class ReactBlessedComponent {
     }
 
     // Rendering the screen
-    ReactBlessedIDOperations.screen.debouncedRender();
+    ReactNativeIDOperations.debouncedRender();
   }
 
   /**
    * Mounting the blessed node itself.
    *
-   * @param   {BlessedNode|BlessedScreen} parent  - The parent node.
+   * @param   {NativeNode|NativeScreen} parent  - The parent node.
    * @param   {ReactElement}              element - The element to mount.
-   * @return  {BlessedNode}                       - The mounted node.
+   * @return  {NativeNode}                       - The mounted node.
    */
   mountNode(parent, element) {
     const {props, type} = element,
-          {children, ...options} = props,
-          blessedElement = blessed[type];
+          { root } = ReactNativeIDOperations;
 
-    invariant(
-      !!blessedElement,
-      `Invalid blessed element "${type}".`
-    );
+    const node = root.createComponent(type, props);
 
-    const node = blessed[type](solveClass(options));
-
-    node.on('event', this._eventListener);
-    parent.append(node);
+    // TODO: handle events
+    // node.on('event', this._eventListener);
+    parent.addChild(node);
 
     return node;
   }
@@ -135,11 +131,12 @@ export default class ReactBlessedComponent {
    * @overridable
    */
   receiveComponent(nextElement, transaction, context) {
-    const {props: {children, ...options}} = nextElement,
-          node = ReactBlessedIDOperations.get(this._rootNodeID);
+    const {props: {children, ...rest}} = nextElement,
+          { api } = ReactNativeIDOperations,
+          node = ReactNativeIDOperations.get(this._rootNodeID);
 
     this._updating = true;
-    update(node, solveClass(options));
+    node.update(nextElement.props);
     this._updating = false;
 
     // Updating children
@@ -151,12 +148,13 @@ export default class ReactBlessedComponent {
     });
 
     // Setting textual content
-    if (content)
+    if (content) {
       node.setContent('' + content.join(''));
+    }
 
     this.updateChildren(realChildren, transaction, context);
 
-    ReactBlessedIDOperations.screen.debouncedRender();
+    ReactNativeIDOperations.debouncedRender();
   }
 
   /**
@@ -165,25 +163,26 @@ export default class ReactBlessedComponent {
   unmountComponent() {
     this.unmountChildren();
 
-    const node = ReactBlessedIDOperations.get(this._rootNodeID);
+    const node = ReactNativeIDOperations.get(this._rootNodeID);
 
-    node.off('event', this._eventListener);
+    // TODO: handle events
+    // node.off('event', this._eventListener);
     node.destroy();
 
-    ReactBlessedIDOperations.drop(this._rootNodeID);
+    ReactNativeIDOperations.drop(this._rootNodeID);
 
     this._rootNodeID = null;
 
-    ReactBlessedIDOperations.screen.debouncedRender();
+    ReactNativeIDOperations.debouncedRender();
   }
 
   /**
    * Getting a public instance of the component for refs.
    *
-   * @return {BlessedNode} - The instance's node.
+   * @return {NativeNode} - The instance's node.
    */
   getPublicInstance() {
-    return ReactBlessedIDOperations.get(this._rootNodeID);
+    return ReactNativeIDOperations.get(this._rootNodeID);
   }
 }
 
@@ -191,6 +190,6 @@ export default class ReactBlessedComponent {
  * Extending the component with the MultiChild mixin.
  */
 extend(
-  ReactBlessedComponent.prototype,
+  ReactNativeComponent.prototype,
   ReactMultiChild.Mixin
 );

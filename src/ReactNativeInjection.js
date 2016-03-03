@@ -1,24 +1,25 @@
 /**
- * React Blessed Dependency Injection
+ * React Native Dependency Injection
  * ===================================
  *
  * Injecting the renderer's needed dependencies into React's internals.
  */
 import ReactInjection from 'react/lib/ReactInjection';
 import ReactComponentEnvironment from 'react/lib/ReactComponentEnvironment';
-import ReactBlessedReconcileTransaction from './ReactBlessedReconcileTransaction';
-import ReactBlessedComponent from './ReactBlessedComponent';
+import ReactNativeReconcileTransaction from './ReactNativeReconcileTransaction';
+import ReactNativeComponent from './ReactNativeComponent';
 
 export default function inject() {
 
   ReactInjection.NativeComponent.injectGenericComponentClass(
-    ReactBlessedComponent
+    ReactNativeComponent
   );
 
   ReactInjection.Updates.injectReconcileTransaction(
-    ReactBlessedReconcileTransaction
+    ReactNativeReconcileTransaction
   );
 
+  // TODO: provide empty element name customization possibility
   ReactInjection.EmptyComponent.injectEmptyComponent('element');
 
   // NOTE: we're monkeypatching ReactComponentEnvironment because

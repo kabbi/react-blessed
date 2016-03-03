@@ -1,36 +1,34 @@
 {
-  "name": "react-blessed",
-  "version": "0.1.7",
-  "description": "A react renderer for blessed.",
+  "name": "react-custom-renderer",
+  "version": "0.0.1",
+  "description": "A react renderer api wrapper to simplify writing custom renderers.",
   "main": "./dist/render.js",
   "scripts": {
-    "animation": "babel-node ./examples/animation.jsx",
+    "demo:box": "babel-node ./examples/box.jsx",
+    "demo:pancake": "babel-node ./examples/pancake.jsx",
     "build": "babel ./src --out-dir ./dist",
-    "dashboard": "babel-node ./examples/dashboard.jsx",
-    "demo": "babel-node ./examples/demo.jsx",
     "prepublish": "npm run build",
     "test": "mocha -R spec --compilers js:babel/register ./test/endpoint.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yomguithereal/react-blessed.git"
+    "url": "git+https://github.com/kabbi/react-custom-renderer.git"
   },
   "keywords": [
-    "blessed",
+    "custom",
     "react",
     "renderer",
-    "cli",
-    "interface"
+    "interface",
+    "wrapper"
   ],
-  "author": "yomguithereal",
+  "author": "kabbi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yomguithereal/react-blessed/issues"
+    "url": "https://github.com/kabbi/react-custom-renderer/issues"
   },
-  "homepage": "https://github.com/yomguithereal/react-blessed#readme",
+  "homepage": "https://github.com/kabbi/react-custom-renderer#readme",
   "devDependencies": {
     "babel": "^5.8.3",
-    "blessed": "^0.1.14",
     "mocha": "^2.0.1",
     "react": "^0.14.0"
   },
